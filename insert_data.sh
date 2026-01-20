@@ -9,38 +9,31 @@ fi
 
 # Do not change code above this line. Use the PSQL variable above to query your database.
 
-# Clear existing data
 echo $($PSQL "TRUNCATE TABLE games, teams RESTART IDENTITY")
 
-# Read CSV
-cat games.csv | while IFS="," read YEAR ROUND WINNER OPPONENT WINNER_GOALS OPPONENT_GOALS
+cat games.csv | while IFS="," read year round winner opponent winner_goals opponent_goals
 do
-  # Skip header
-  if [[ $YEAR != "year" ]]
-  then
-    # Insert winner team if not exists
-    WINNER_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$WINNER'")
-    if [[ -z $WINNER_ID ]]
-    then
-      INSERT_WINNER=$($PSQL "INSERT INTO teams(name) VALUES('$WINNER')")
-      echo Inserted team: $WINNER
-    fi
+if [[ $year != "year" ]]
+then
+winner_id=$($PSQL "SELECT team_id FROM teams WHERE name='$winner'")
+if [[ -z $winner_id ]]
+then
+insert_winner=$($PSQL "INSERT INTO teams(name) VALUES('$winner')")
+echo Inserted team: $winner
+fi
 
-    # Insert opponent team if not exists
-    OPPONENT_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$OPPONENT'")
-    if [[ -z $OPPONENT_ID ]]
-    then
-      INSERT_OPPONENT=$($PSQL "INSERT INTO teams(name) VALUES('$OPPONENT')")
-      echo Inserted team: $OPPONENT
-    fi
+opponent_id=$($PSQL "SELECT team_id FROM teams WHERE name='$opponent'")
+if [[ -z $opponent_id ]]
+then
+insert_opponent=$($PSQL "INSERT INTO teams(name) VALUES('$opponent')")
+echo Inserted team: $opponent
+fi
 
-    # Get IDs
-    WINNER_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$WINNER'")
-    OPPONENT_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$OPPONENT'")
+winner_id=$($PSQL "SELECT team_id FROM teams WHERE name='$winner'")
+opponent_id=$($PSQL "SELECT team_id FROM teams WHERE name='$opponent'")
 
-    # Insert game
-    INSERT_GAME=$($PSQL "INSERT INTO games(year, round, winner_id, opponent_id, winner_goals, opponent_goals)
-      VALUES($YEAR, '$ROUND', $WINNER_ID, $OPPONENT_ID, $WINNER_GOALS, $OPPONENT_GOALS)")
-    echo Inserted game: $YEAR $ROUND $WINNER vs $OPPONENT
-  fi
+insert_game=$($PSQL "INSERT INTO games(year, round, winner_id, opponent_id, winner_goals, opponent_goals)
+VALUES($year, '$round', $winner_id, $opponent_id, $winner_goals, $opponent_goals)")
+echo Inserted game: $year $round $winner vs $opponent
+fi
 done
